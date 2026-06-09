@@ -1,0 +1,235 @@
+nome_missao = "Orion Test Alpha"
+nome_equipe = "Equipe Apollo"
+
+dados_missao = [
+    [24, 92, 88, 96, 90],  
+    [27, 80, 72, 94, 85], 
+    [31, 65, 58, 91, 70],  
+    [36, 42, 38, 87, 55],  
+    [39, 28, 19, 78, 35],  
+    [34, 55, 32, 82, 50]  
+]
+
+areas_monitoradas = [
+    "Temperatura interna",
+    "Comunicação com a base",
+    "Sistema de energia",
+    "Suporte de oxigênio",
+    "Estabilidade operacional"
+]
+
+
+def analisar_temperatura(temp):
+    if temp < 18:
+        return 1, "ATENÇÃO", "Temperatura baixa"
+    elif 18 <= temp <= 30:
+        return 0, "NORMAL", "Temperatura estável"
+    elif 30 < temp <= 35:
+        return 1, "ATENÇÃO", "Temperatura elevada"
+    else:
+        return 2, "CRÍTICO", "Risco de superaquecimento"
+
+
+def analisar_comunicacao(com):
+    if com < 30:
+        return 2, "CRÍTICO", "Comunicação com a base em nível crítico"
+    elif 30 <= com <= 59:
+        return 1, "ATENÇÃO", "Comunicação instável"
+    else:
+        return 0, "NORMAL", "Comunicação estável"
+
+
+def analisar_bateria(bat):
+    if bat < 20:
+        return 2, "CRÍTICO", "Bateria em nível crítico"
+    elif 20 <= bat <= 49:
+        return 1, "ATENÇÃO", "Bateria abaixo do recomendado"
+    else:
+        return 0, "NORMAL", "Energia estável"
+
+
+def analisar_oxigenio(oxi):
+    if oxi < 80:
+        return 2, "CRÍTICO", "Oxigênio em nível crítico"
+    elif 80 <= oxi <= 89:
+        return 1, "ATENÇÃO", "Oxigênio abaixo do ideal"
+    else:
+        return 0, "NORMAL", "Oxigênio adequado"
+
+
+def analisar_estabilidade(est):
+    if est < 40:
+        return 2, "CRÍTICO", "Estabilidade operacional crítica"
+    elif 40 <= est <= 69:
+        return 1, "ATENÇÃO", "Estabilidade operacional reduzida"
+    else:
+        return 0, "NORMAL", "Estabilidade operacional adequada"
+
+
+def classificar_ciclo(pontos):
+    if 0 <= pontos <= 2:
+        return "MISSÃO ESTÁVEL"
+    elif 3 <= pontos <= 5:
+        return "MISSÃO EM ATENÇÃO"
+    else:
+        return "MISSÃO CRÍTICA"
+
+
+def gerar_recomendacao(temp_status, com_status, bat_status, oxi_status, est_status, pontos):
+    if pontos >= 10:
+        return "Ativar modo de segurança e priorizar suporte à vida, energia e comunicação."
+    elif temp_status == "CRÍTICO" or (temp_status == "ATENÇÃO" and pontos == 1):
+        return "Verificar controle térmico da missão."
+    elif pontos >= 3:
+        return "Monitorar sistemas em atenção e preparar plano de contingência."
+    else:
+        return "Manter operação normal e continuar monitoramento."
+
+
+def analisar_tendencia(primeiro_risco, ultimo_risco):
+    if ultimo_risco > primeiro_risco:
+        return "A missão apresentou tendência de piora."
+    elif ultimo_risco < primeiro_risco:
+        return "A missão apresentou tendência de melhora."
+    else:
+        return "A missão permaneceu estável em relação ao início."
+
+
+def executar_monitoramento():
+    total_ciclos = len(dados_missao)
+
+    soma_temp = 0
+    soma_com = 0
+    soma_bat = 0
+    soma_oxi = 0
+    soma_est = 0
+    soma_risco_total = 0
+
+    maior_pontuacao_risco = -1
+    ciclo_mais_critico = 0
+    qtd_ciclos_criticos = 0
+
+    pontos_acumulados_area = [0, 0, 0, 0, 0]
+
+    risco_primeiro_ciclo = 0
+    risco_ultimo_ciclo = 0
+
+    print("========================================")
+    print("           MISSION CONTROL AI           ")
+    print("========================================")
+    print(f"Missão: {nome_missao}")
+    print(f"Equipe: {nome_equipe}")
+    print(f"Quantidade de ciclos analisados: {total_ciclos}")
+    print("========================================\n")
+
+    for i in range(total_ciclos):
+        ciclo_atual = i + 1
+        dados = dados_missao[i]
+
+        temp, com, bat, oxi, est = dados
+
+        soma_temp += temp
+        soma_com += com
+        soma_bat += bat
+        soma_oxi += oxi
+        soma_est += est
+
+        p_temp, status_temp, desc_temp = analisar_temperatura(temp)
+        p_com, status_com, desc_com = analisar_comunicacao(com)
+        p_bat, status_bat, desc_bat = analisar_bateria(bat)
+        p_oxi, status_oxi, desc_oxi = analisar_oxigenio(oxi)
+        p_est, status_est, desc_est = analisar_estabilidade(est)
+
+        pontos_acumulados_area[0] += p_temp
+        pontos_acumulados_area[1] += p_com
+        pontos_acumulados_area[2] += p_bat
+        pontos_acumulados_area[3] += p_oxi
+        pontos_acumulados_area[4] += p_est
+
+        pontos_ciclo = p_temp + p_com + p_bat + p_oxi + p_est
+        soma_risco_total += pontos_ciclo
+
+        if i == 0:
+            risco_primeiro_ciclo = pontos_ciclo
+        if i == total_ciclos - 1:
+            risco_ultimo_ciclo = pontos_ciclo
+
+        classificacao_c = classificar_ciclo(pontos_ciclo)
+        if classificacao_c == "MISSÃO CRÍTICA":
+            qtd_ciclos_criticos += 1
+
+        if pontos_ciclo > maior_pontuacao_risco:
+            maior_pontuacao_risco = pontos_ciclo
+            ciclo_mais_critico = ciclo_atual
+
+        recomendacao = gerar_recomendacao(status_temp, status_com, status_bat, status_oxi, status_est, pontos_ciclo)
+
+        print(f"CICLO {ciclo_atual}")
+        print(f"Temperatura: {temp} °C | {status_temp} | {desc_temp}")
+        print(f"Comunicação: {com}% | {status_com} | {desc_com}")
+        print(f"Bateria: {bat}% | {status_bat} | {desc_bat}")
+        print(f"Oxigênio: {oxi}% | {status_oxi} | {desc_oxi}")
+        print(f"Estabilidade: {est}% | {status_est} | {desc_est}")
+        print(f"Pontuação de risco do ciclo: {pontos_ciclo}")
+        print(f"Classificação do ciclo: {classificacao_c}")
+        print(f"Recomendação: {recomendacao}")
+        print("-" * 50)
+
+    media_temp = soma_temp / total_ciclos
+    media_com = soma_com / total_ciclos
+    media_bat = soma_bat / total_ciclos
+    media_oxi = soma_oxi / total_ciclos
+    media_est = soma_est / total_ciclos
+    risco_medio = soma_risco_total / total_ciclos
+
+    tendencia = analisar_tendencia(risco_primeiro_ciclo, risco_ultimo_ciclo)
+
+    maior_risco_area = -1
+    indice_area_mais_afetada = 0
+    for idx in range(len(pontos_acumulados_area)):
+        if pontos_acumulados_area[idx] > maior_risco_area:
+            maior_risco_area = pontos_acumulados_area[idx]
+            indice_area_mais_afetada = idx
+
+    area_mais_afetada = areas_monitoradas[indice_area_mais_afetada]
+
+    if 0 <= risco_medio <= 2:
+        classificacao_final = "MISSÃO ESTÁVEL"
+        conclusao = "A missão apresentou estabilidade geral satisfatória \n durante a operação operacional básica."
+    elif 2 < risco_medio <= 5:
+        classificacao_final = "MISSÃO EM ATENÇÃO"
+        conclusao = "A missão apresentou instabilidade relevante durante a operação.\n Apesar da tentativa de recuperação no último ciclo, ainda existem sistemas\n em atenção e a equipe deve manter o plano de contingência ativo."
+    else:
+        classificacao_final = "MISSÃO CRÍTICA"
+        conclusao = "A missão operou sob níveis críticos severos de risco acumulado.\n Protocolos de intervenção manual ou emergência contínua são necessários."
+
+    print("\n" + "=" * 60)
+    print("                   RELATÓRIO FINAL DA MISSÃO                  ")
+    print("=" * 60)
+    print(f"Missão: {nome_missao}")
+    print(f"Equipe: {nome_equipe}\n")
+    print(f"Quantidade de ciclos analisados: {total_ciclos}\n")
+    print(f"Média de temperatura: {media_temp:.2f} °C")
+    print(f"Média de comunicação: {media_com:.2f}%")
+    print(f"Média de bateria: {media_bat:.2f}%")
+    print(f"Média de oxigênio: {media_oxi:.2f}%")
+    print(f"Média de comportamento de estabilidade: {media_est:.2f}%\n")
+    print(f"Ciclo mais crítico: Ciclo {ciclo_mais_critico}")
+    print(f"Maior pontuação de risco: {maior_pontuacao_risco}")
+    print(f"Risco médio da missão: {risco_medio:.2f}")
+    print(f"Quantidade de ciclos críticos: {qtd_ciclos_criticos}\n")
+    print("Tendência da missão:")
+    print(f" {tendencia}\n")
+    print("Pontuação acumulada por área:")
+    for idx in range(len(areas_monitoradas)):
+        print(f" * {areas_monitoradas[idx]}: {pontos_acumulados_area[idx]} pontos")
+    print(f"\nÁrea mais afetada:\n {area_mais_afetada}\n")
+    print("Classificação final da missão:")
+    print(f" {classificacao_final}\n")
+    print("Conclusão:")
+    print(f" {conclusao}")
+    print("=" * 60)
+
+
+if __name__ == "__main__":
+    executar_monitoramento()
